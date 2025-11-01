@@ -1,4 +1,4 @@
-# Goaichat Rewrite Plan: Simplicity First
+# Chatty Rewrite Plan: Simplicity First
 
 ## Current State Analysis
 
@@ -10,7 +10,7 @@
 ### The Problem: Over-Engineering
 The current plan adds significant complexity that may not be needed for a fast, simple chat client:
 
-1. **SQLite persistence** (`/var/log/goaichat/<username>/goaichat.db`)
+1. **SQLite persistence** (`/var/log/chatty/<username>/chatty.db`)
    - Schema migrations
    - Session/message/model tables
    - Repository patterns
@@ -58,7 +58,7 @@ The current plan adds significant complexity that may not be needed for a fast, 
 
 ### Single-File Approach (Option A: Ultra-Minimal)
 ```
-goaichat/
+chatty/
 ├── main.go              # Everything in ~300-400 lines
 ├── config.yaml          # Simple config
 └── go.mod
@@ -76,8 +76,8 @@ goaichat/
 
 ### Lean Multi-File (Option B: Pragmatic)
 ```
-goaichat/
-├── cmd/goaichat/
+chatty/
+├── cmd/chatty/
 │   └── main.go          # Entry point (~50 lines)
 ├── internal/
 │   ├── config.go        # Config loading (~100 lines)
@@ -147,7 +147,7 @@ func (s *Session) Run(ctx context.Context) error {
 }
 ```
 
-#### 4. Main (`cmd/goaichat/main.go`)
+#### 4. Main (`cmd/chatty/main.go`)
 ```go
 func main() {
     cfg := config.Load()
@@ -160,7 +160,7 @@ func main() {
 ### Optional: File-Based History (If Needed Later)
 Instead of SQLite, use simple append-only JSON files:
 ```
-~/.goaichat/
+~/.chatty/
 └── history/
     └── 2024-10-18-12-23.jsonl  # One file per session
 ```

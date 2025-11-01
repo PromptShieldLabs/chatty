@@ -1,4 +1,4 @@
-# Goaichat
+# Chatty
 
 A dead-simple, blazing-fast terminal chat client for OpenAI-compatible APIs written in Go.
 
@@ -20,15 +20,15 @@ A dead-simple, blazing-fast terminal chat client for OpenAI-compatible APIs writ
 ### Installation
 
 ```bash
-go install github.com/stig/goaichat/cmd/goaichat@latest
+go install github.com/PromptShieldLabs/chatty/cmd/chatty@latest
 ```
 
 Alternatively, clone the repository and build locally:
 
 ```bash
-git clone https://github.com/stig/goaichat.git
-cd goaichat
-go build ./cmd/goaichat
+git clone https://github.com/PromptShieldLabs/chatty.git
+cd chatty
+go build ./cmd/chatty
 ```
 
 ### Configuration
@@ -38,7 +38,7 @@ Create `config.yaml` in the project root or pass `--config` to specify a path. A
 ```yaml
 api:
   url: "https://api.openai.com/v1"
-  key: "${GOAICHAT_API_KEY}"
+  key: "${CHATTY_API_KEY}"
 model:
   name: "gpt-4o-mini"
   temperature: 0.7
@@ -51,18 +51,18 @@ logging:
 
 Environment variables override several fields:
 
-- `GOAICHAT_API_URL`
-- `GOAICHAT_API_KEY`
+- `CHATTY_API_URL`
+- `CHATTY_API_KEY`
 
 ### Running
 
 ```bash
 # Run directly
-go run ./cmd/goaichat
+go run ./cmd/chatty
 
 # Or build and run
-go build ./cmd/goaichat
-./goaichat
+go build ./cmd/chatty
+./chatty
 ```
 
 ### Available Commands
@@ -75,11 +75,11 @@ Once running, you can use these commands:
 
 ## Architecture
 
-Goaichat follows a lean, simple architecture:
+Chatty follows a lean, simple architecture:
 
 ```
-goaichat/
-├── cmd/goaichat/
+chatty/
+├── cmd/chatty/
 │   └── main.go           # Entry point (~45 lines)
 ├── internal/
 │   ├── config/
@@ -95,7 +95,7 @@ goaichat/
 ## Development
 
 - Run tests: `go test ./...`
-- Build: `go build ./cmd/goaichat`
+- Build: `go build ./cmd/chatty`
 - Format: `go fmt ./...`
 
 ## License

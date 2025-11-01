@@ -1,8 +1,8 @@
-# Goaichat Rewrite Summary
+# Chatty Rewrite Summary
 
 ## What Was Accomplished
 
-Successfully rewrote goaichat following the **Option B (Lean Multi-File)** approach from `rewrite.md`, achieving a dramatically simpler and faster codebase.
+Successfully rewrote chatty following the **Option B (Lean Multi-File)** approach from `rewrite.md`, achieving a dramatically simpler and faster codebase.
 
 ## Before vs After Comparison
 
@@ -39,7 +39,7 @@ internal/
 ├── client.go               # OpenAI HTTP client (122 lines)
 └── chat.go                 # Chat loop + UI (218 lines)
 
-cmd/goaichat/
+cmd/chatty/
 └── main.go                 # Entry point (45 lines)
 ```
 
@@ -91,13 +91,13 @@ cfg → client → session → run
 All tests pass:
 ```bash
 $ go test ./...
-ok      github.com/stig/goaichat/internal       0.003s
-ok      github.com/stig/goaichat/internal/config   (cached)
+ok      github.com/PromptShieldLabs/chatty/internal       0.003s
+ok      github.com/PromptShieldLabs/chatty/internal/config   (cached)
 ```
 
 Build succeeds:
 ```bash
-$ go build ./cmd/goaichat
+$ go build ./cmd/chatty
 # Success - binary created
 ```
 

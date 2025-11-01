@@ -1,4 +1,4 @@
-module github.com/stig/goaichat
+module github.com/PromptShieldLabs/chatty
 
 go 1.24.6
 

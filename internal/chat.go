@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/stig/goaichat/internal/config"
+	"github.com/PromptShieldLabs/chatty/internal/config"
 )
 
 // ANSI color codes for terminal output
@@ -146,7 +146,7 @@ func (s *Session) handleCommand(cmd string) (exit bool, err error) {
 }
 
 func (s *Session) printWelcome() {
-	s.println(s.colorize(colorCyan, "=== Goaichat ==="))
+	s.println(s.colorize(colorCyan, "=== Chatty ==="))
 	s.println(fmt.Sprintf("Model: %s | Temperature: %.1f", s.config.Model.Name, s.config.Model.Temperature))
 	s.println(s.colorize(colorYellow, "Type /help for commands, /exit to quit"))
 	s.println("")

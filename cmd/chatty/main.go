@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/stig/goaichat/internal"
-	"github.com/stig/goaichat/internal/config"
+	"github.com/PromptShieldLabs/chatty/internal"
+	"github.com/PromptShieldLabs/chatty/internal/config"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-# Goaichat Development Plan
+# Chatty Development Plan
 
 ## Overview
 - **Goal** Build a terminal-based AI chat client in Go that interacts with an OpenAI-compatible API using settings provided via `config.yaml`.
@@ -8,7 +8,7 @@
 ## Functional Requirements
 - **Interactive chat loop** Allow continuous message exchange with the AI until the user exits.
 - **Config-driven startup** Parse `config.yaml` for `api.url`, `api.key`, model defaults, and future options (e.g., system prompts, temperature, streaming flag).
-- **Persistent history** Store chats in a SQLite database located at `/var/log/goaichat/<username>/goaichat.db`, capturing session metadata and full message transcripts.
+- **Persistent history** Store chats in a SQLite database located at `/var/log/chatty/<username>/chatty.db`, capturing session metadata and full message transcripts.
 - **History commands** Provide `/list` to enumerate saved chats and allow selecting or reopening them within the session.
 - **Model management** Support `/models` command to display configured/available models, persist the user’s choice, and use it for subsequent requests.
 - **Graceful exit controls** Support commands like `/exit`, `/reset`, `/help`.
@@ -21,7 +21,7 @@
 - **Observability** Include structured logging with verbosity toggle.
 ## Architecture
 ### High-Level Components
-- **CLI entrypoint** `cmd/goaichat/main.go` handles argument parsing and bootstraps the app.
+- **CLI entrypoint** `cmd/chatty/main.go` handles argument parsing and bootstraps the app.
 - **Configuration layer** `internal/config` loads, validates, merges `config.yaml` with environment overrides.
 - **Application core** `internal/app` wires config, client, history, and UI controller.
 - **Chat service** `internal/chat` manages conversation state, prompt assembly, tool commands, and transcripts.
@@ -51,8 +51,8 @@ dflow LR
 ```
 
 ## Persistence & Data Storage (`internal/storage`)
-- **Data directory** Resolve user-specific path `/var/log/goaichat/<username>/` (configurable override) and ensure directories exist with secure permissions.
-- **Database** SQLite file `goaichat.db` managed via `modernc.org/sqlite` (pure Go) for portability; allow build tag to switch to `mattn/go-sqlite3` if desired.
+- **Data directory** Resolve user-specific path `/var/log/chatty/<username>/` (configurable override) and ensure directories exist with secure permissions.
+- **Database** SQLite file `chatty.db` managed via `modernc.org/sqlite` (pure Go) for portability; allow build tag to switch to `mattn/go-sqlite3` if desired.
 - **Schema**
   - **`sessions`** (`id`, `name`, `created_at`, `updated_at`, `model_name`, `summary`).
   - **`messages`** (`id`, `session_id`, `role`, `content`, `token_count`, `created_at`).
@@ -62,7 +62,7 @@ dflow LR
 - **Performance** Enable write-ahead logging, tune connection settings, and guard concurrent access with a request queue or mutex.
 
 ## Configuration Handling (`internal/config`)
-- **Load order** Default values → `config.yaml` → environment overrides (`GOAICHAT_API_KEY`, etc.) → CLI flags.
+- **Load order** Default values → `config.yaml` → environment overrides (`CHATTY_API_KEY`, etc.) → CLI flags.
 - **Parsing** Use `gopkg.in/yaml.v3` with a typed struct, e.g., `Config{ API struct{ URL string; Key string }; Model struct{ Name string; Temperature float64; Stream bool }; Logging struct{ Level string } }`.
 - **Validation** Ensure non-empty `API.URL`, `API.Key`; validate URL format and ranges (temperature 0-2); provide default fallbacks.
 - **Hot reload (future)** Structure API to support reloading without restart.
@@ -111,7 +111,7 @@ logging:
 
 ## Implementation Roadmap
 - **Milestone 1: Project bootstrap**
-  - **Create module** `go mod init github.com/<user>/goaichat`.
+  - **Create module** `go mod init github.com/PromptShieldLabs/chatty`.
   - **Set up CI** (GitHub Actions) running `go test` and lint.
   - **Add basic logging** using `log/slog` or `zerolog`.
 
@@ -127,7 +127,7 @@ logging:
 - **Milestone 4: Persistence foundation**
   - **Design** SQLite schema and migrations within `internal/storage`.
   - **Implement** repositories for sessions, messages, and models.
-  - **Ensure** path resolution to `/var/log/goaichat/<username>/` with permission checks and tests.
+  - **Ensure** path resolution to `/var/log/chatty/<username>/` with permission checks and tests.
 
 - **Milestone 5: Chat loop MVP**
   - **Implement** CLI loop that reads user input, calls chat client, prints responses.

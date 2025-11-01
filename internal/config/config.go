@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	envAPIKey = "GOAICHAT_API_KEY"
-	envAPIURL = "GOAICHAT_API_URL"
+	envAPIKey = "CHATTY_API_KEY"
+	envAPIURL = "CHATTY_API_URL"
 )
 
-// Config captures runtime configuration for the Goaichat application.
+// Config captures runtime configuration for the Chatty application.
 type Config struct {
 	API     APIConfig     `yaml:"api"`
 	Model   ModelConfig   `yaml:"model"`
@@ -99,7 +99,7 @@ func (c *Config) validate() error {
 		return errors.New("api.url must be set")
 	}
 	if strings.TrimSpace(c.API.Key) == "" {
-		return errors.New("api.key must be set or GOAICHAT_API_KEY provided")
+		return errors.New("api.key must be set or CHATTY_API_KEY provided")
 	}
 	if c.Model.Temperature < 0 || c.Model.Temperature > 2 {
 		return fmt.Errorf("model.temperature must be between 0 and 2, got %f", c.Model.Temperature)
