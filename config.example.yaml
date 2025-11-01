@@ -1,0 +1,11 @@
+api:
+  url: "https://api.promptshield.io/v1"
+  key: "${GOAICHAT_API_KEY}"
+model:
+  name: "openai/gpt-4o-mini"
+  temperature: 0.7
+  stream: true
+ui:
+  show_timestamps: true
+logging:
+  level: "info"
