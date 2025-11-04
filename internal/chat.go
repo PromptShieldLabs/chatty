@@ -165,9 +165,15 @@ func (s *Session) streamResponse(ctx context.Context) (string, error) {
 	err := s.client.ChatStream(ctx, s.history, s.config.Model.Name, s.config.Model.Temperature, func(chunk string) error {
 		fullResponse.WriteString(chunk)
 		
-		// If we're past thinking tags, collect for markdown rendering
+		// If we're past thinking tags, stream AND collect for markdown rendering
 		if thinkingClosed {
 			afterThinkingContent.WriteString(chunk)
+			// Stream the chunk in real-time
+			if s.useColors && afterThinkingContent.Len() == len(chunk) {
+				// First chunk after thinking - set color
+				fmt.Fprint(s.output, colorGreen)
+			}
+			fmt.Fprint(s.output, chunk)
 			return nil
 		}
 		
@@ -214,9 +220,15 @@ func (s *Session) streamResponse(ctx context.Context) (string, error) {
 					fmt.Fprint(s.output, colorReset)
 				}
 				
-				// Start collecting content after closing tag for markdown
+				// Start streaming and collecting content after closing tag
 				afterTag := bufferStr[loc[1]:]
-				afterThinkingContent.WriteString(afterTag)
+				if afterTag != "" {
+					afterThinkingContent.WriteString(afterTag)
+					if s.useColors {
+						fmt.Fprint(s.output, colorGreen)
+					}
+					fmt.Fprint(s.output, afterTag)
+				}
 				buffer.Reset()
 			}
 		} else {
@@ -239,34 +251,27 @@ func (s *Session) streamResponse(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	// Reset colors
+	// Reset colors and add newline after streaming
 	if s.useColors {
 		fmt.Fprint(s.output, colorReset)
 	}
+	fmt.Fprintln(s.output)
 
-	// If we collected content after thinking tags, render it with markdown
-	if thinkingClosed && afterThinkingContent.Len() > 0 {
-		finalContent := afterThinkingContent.String()
-		if strings.TrimSpace(finalContent) != "" {
-			if s.renderMarkdown && s.mdRenderer != nil {
-				rendered, err := s.mdRenderer.Render(finalContent)
-				if err == nil {
-					fmt.Fprint(s.output, rendered)
-				} else {
-					fmt.Fprintln(s.output, finalContent)
-				}
-			} else {
-				fmt.Fprintln(s.output, finalContent)
+	// If we collected content after thinking tags AND markdown is enabled, re-render with markdown
+	if thinkingClosed && afterThinkingContent.Len() > 0 && s.renderMarkdown && s.mdRenderer != nil {
+		finalContent := strings.TrimSpace(afterThinkingContent.String())
+		if finalContent != "" {
+			rendered, err := s.mdRenderer.Render(finalContent)
+			if err == nil {
+				// Print a separator and the markdown-rendered version
+				fmt.Fprintln(s.output, s.colorize(styleDim+colorYellow, "─── Formatted Response ───"))
+				fmt.Fprint(s.output, rendered)
 			}
 		}
-	} else {
+	} else if !thinkingStarted {
 		// No thinking tags - render everything with markdown
-		if !thinkingStarted {
-			response := fullResponse.String()
-			s.printAssistant(response)
-		} else {
-			fmt.Fprintln(s.output)
-		}
+		response := fullResponse.String()
+		s.printAssistant(response)
 	}
 
 	return fullResponse.String(), nil
