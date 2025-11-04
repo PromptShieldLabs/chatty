@@ -1,7 +1,7 @@
 .PHONY: build test clean install version tag
 
 # Get version from git tags, or use 0.1.0 if no tags exist
-VERSION ?= $(shell git describe --tags --abbrev=0 2>/dev/null || echo "0.1.3")
+VERSION ?= $(shell git describe --tags --abbrev=0 2>/dev/null || echo "0.1.4")
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 

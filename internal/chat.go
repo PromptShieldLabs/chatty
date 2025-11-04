@@ -152,13 +152,86 @@ func (s *Session) sendMessage(ctx context.Context, input string) error {
 
 func (s *Session) streamResponse(ctx context.Context) (string, error) {
 	var fullResponse strings.Builder
+	var buffer strings.Builder
+	var afterThinkingContent strings.Builder
+	inThinking := false
+	thinkingStarted := false
+	thinkingClosed := false
 
-	// Check if we should stream with thinking tag detection
+	// Regex patterns for thinking tags
 	thinkTagPattern := regexp.MustCompile(`<think>|<thinking>`)
-	
-	// Collect all chunks first
+	thinkClosePattern := regexp.MustCompile(`</think>|</thinking>`)
+
 	err := s.client.ChatStream(ctx, s.history, s.config.Model.Name, s.config.Model.Temperature, func(chunk string) error {
 		fullResponse.WriteString(chunk)
+		
+		// If we're past thinking tags, collect for markdown rendering
+		if thinkingClosed {
+			afterThinkingContent.WriteString(chunk)
+			return nil
+		}
+		
+		buffer.WriteString(chunk)
+		bufferStr := buffer.String()
+
+		// Check for opening thinking tags
+		if !inThinking && thinkTagPattern.MatchString(bufferStr) {
+			loc := thinkTagPattern.FindStringIndex(bufferStr)
+			if loc != nil {
+				// Print content before tag
+				beforeTag := bufferStr[:loc[0]]
+				if beforeTag != "" && !thinkingStarted {
+					if s.useColors {
+						fmt.Fprint(s.output, colorGreen)
+					}
+					fmt.Fprint(s.output, beforeTag)
+				}
+				
+				// Switch to thinking mode
+				inThinking = true
+				thinkingStarted = true
+				if s.useColors {
+					fmt.Fprint(s.output, colorReset+styleDim+colorMagenta)
+				}
+				
+				// Print opening tag and content after it
+				afterTag := bufferStr[loc[0]:]
+				fmt.Fprint(s.output, afterTag)
+				buffer.Reset()
+			}
+		} else if inThinking && thinkClosePattern.MatchString(bufferStr) {
+			// Check for closing thinking tags
+			loc := thinkClosePattern.FindStringIndex(bufferStr)
+			if loc != nil {
+				// Print content including closing tag
+				upToAndIncludingTag := bufferStr[:loc[1]]
+				fmt.Fprint(s.output, upToAndIncludingTag)
+				
+				// Switch back to normal mode
+				inThinking = false
+				thinkingClosed = true
+				if s.useColors {
+					fmt.Fprint(s.output, colorReset)
+				}
+				
+				// Start collecting content after closing tag for markdown
+				afterTag := bufferStr[loc[1]:]
+				afterThinkingContent.WriteString(afterTag)
+				buffer.Reset()
+			}
+		} else {
+			// Normal streaming - print as we go
+			if !thinkingStarted && !inThinking {
+				if s.useColors {
+					fmt.Fprint(s.output, colorGreen)
+					thinkingStarted = true
+				}
+			}
+			fmt.Fprint(s.output, chunk)
+			buffer.Reset()
+			buffer.WriteString(chunk)
+		}
+		
 		return nil
 	})
 
@@ -166,20 +239,37 @@ func (s *Session) streamResponse(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	response := fullResponse.String()
-	
-	// Check if response has thinking tags
-	hasThinkingTags := thinkTagPattern.MatchString(response)
-	
-	if hasThinkingTags {
-		// Print with styled thinking tags (no markdown for thinking content)
-		s.printWithThinkingTags(response)
-	} else {
-		// Normal output (with markdown if enabled)
-		s.printAssistant(response)
+	// Reset colors
+	if s.useColors {
+		fmt.Fprint(s.output, colorReset)
 	}
 
-	return response, nil
+	// If we collected content after thinking tags, render it with markdown
+	if thinkingClosed && afterThinkingContent.Len() > 0 {
+		finalContent := afterThinkingContent.String()
+		if strings.TrimSpace(finalContent) != "" {
+			if s.renderMarkdown && s.mdRenderer != nil {
+				rendered, err := s.mdRenderer.Render(finalContent)
+				if err == nil {
+					fmt.Fprint(s.output, rendered)
+				} else {
+					fmt.Fprintln(s.output, finalContent)
+				}
+			} else {
+				fmt.Fprintln(s.output, finalContent)
+			}
+		}
+	} else {
+		// No thinking tags - render everything with markdown
+		if !thinkingStarted {
+			response := fullResponse.String()
+			s.printAssistant(response)
+		} else {
+			fmt.Fprintln(s.output)
+		}
+	}
+
+	return fullResponse.String(), nil
 }
 
 func (s *Session) handleCommand(cmd string) (exit bool, err error) {
