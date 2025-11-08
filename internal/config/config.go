@@ -20,6 +20,7 @@ type Config struct {
 	Model   ModelConfig   `yaml:"model"`
 	Logging LoggingConfig `yaml:"logging"`
 	UI      UIConfig      `yaml:"ui"`
+	Storage StorageConfig `yaml:"storage"`
 }
 
 // APIConfig holds settings for connecting to the OpenAI-compatible API.
@@ -43,6 +44,11 @@ type LoggingConfig struct {
 // UIConfig defines terminal rendering preferences.
 type UIConfig struct {
 	ShowTimestamps bool `yaml:"show_timestamps"`
+}
+
+// StorageConfig defines persistence options.
+type StorageConfig struct {
+	Path string `yaml:"path"`
 }
 
 // Load reads configuration from the provided path, falling back to defaults and
@@ -85,6 +91,7 @@ func loadFile(path string, cfg *Config) error {
 	// Expand environment variables in config values
 	cfg.API.Key = os.ExpandEnv(cfg.API.Key)
 	cfg.API.URL = os.ExpandEnv(cfg.API.URL)
+	cfg.Storage.Path = os.ExpandEnv(cfg.Storage.Path)
 
 	return nil
 }
@@ -129,6 +136,9 @@ func defaultConfig() Config {
 		},
 		UI: UIConfig{
 			ShowTimestamps: true,
+		},
+		Storage: StorageConfig{
+			Path: "",
 		},
 	}
 }

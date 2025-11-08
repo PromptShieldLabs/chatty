@@ -8,6 +8,7 @@ import (
 
 	"github.com/PromptShieldLabs/chatty/internal"
 	"github.com/PromptShieldLabs/chatty/internal/config"
+	"github.com/PromptShieldLabs/chatty/internal/storage"
 )
 
 var (
@@ -35,12 +36,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Initialize persistence store (optional)
+	var store *storage.Store
+	if cfg.Storage.Path != "disable" {
+		store, err = storage.Open(cfg.Storage.Path)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: persistence disabled (%v)\n", err)
+		} else {
+			defer store.Close()
+		}
+	}
+
 	// Create chat session with version info
 	versionInfo := version
 	if commit != "none" && commit != "" {
 		versionInfo = fmt.Sprintf("%s (build %s)", version, commit)
 	}
-	session, err := internal.NewSession(client, cfg, versionInfo)
+	session, err := internal.NewSession(client, cfg, store, versionInfo)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: failed to create session: %v\n", err)
 		os.Exit(1)
