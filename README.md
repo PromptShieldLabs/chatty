@@ -1,5 +1,8 @@
 # Chatty
 
+[![Latest Release](https://img.shields.io/github/v/release/ZaguanLabs/chatty)](https://github.com/ZaguanLabs/chatty/releases/latest)
+[![Changelog](https://img.shields.io/badge/changelog-view-blue)](CHANGELOG.md)
+
 A minimal terminal chat client for OpenAI-compatible APIs, written in Go.
 
 ## Why Chatty?
