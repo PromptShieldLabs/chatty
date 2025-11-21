@@ -33,6 +33,7 @@ config.yaml
 config.yml
 *.config.yaml
 *.config.yml
+test_config.yaml
 
 # env file
 .env
